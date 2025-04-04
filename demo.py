@@ -133,5 +133,6 @@ if __name__ == '__main__':
 
     traj_est = droid.terminate(image_stream(args.imagedir, args.calib, args.stride))
 
-    out_trajfn = args.reconstruction_path + 'traj.txt'
+    out_trajfn = args.reconstruction_path + '/traj.txt'
     np.savetxt(out_trajfn, traj_est, fmt='%.6f', header='x y z qx qy qz qw')
+    print("Saved trajectory to {}".format(out_trajfn))
