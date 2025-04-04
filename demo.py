@@ -132,3 +132,6 @@ if __name__ == '__main__':
         save_reconstruction(droid, args.reconstruction_path)
 
     traj_est = droid.terminate(image_stream(args.imagedir, args.calib, args.stride))
+
+    out_trajfn = args.reconstruction_path + 'traj.txt'
+    np.savetxt(out_trajfn, traj_est, fmt='%.6f', header='x y z qx qy qz qw')
