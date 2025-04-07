@@ -85,5 +85,5 @@ class Droid:
         self.backend(12)
 
         camera_trajectory, timestamps = self.traj_filler(stream)
-        return camera_trajectory.inv().data.cpu().numpy(), timestamps.cpu().numpy()
+        return camera_trajectory.inv().data.cpu().numpy(), timestamps
 
