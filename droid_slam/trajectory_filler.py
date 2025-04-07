@@ -100,5 +100,5 @@ class PoseTrajectoryFiller:
             pose_list += self.__fill(tstamps, images, intrinsics)
 
         # stitch pose segments together
-        return lietorch.cat(pose_list, 0)
+        return lietorch.cat(pose_list, 0), tstamps
 

@@ -103,6 +103,7 @@ if __name__ == '__main__':
     parser.add_argument("--backend_nms", type=int, default=3)
     parser.add_argument("--upsample", action="store_true")
     parser.add_argument("--reconstruction_path", help="path to saved reconstruction")
+    parser.add_argument("--out_traj_path", help="path to saved estimated trajectory")
     args = parser.parse_args()
 
     args.stereo = False
@@ -131,8 +132,14 @@ if __name__ == '__main__':
     if args.reconstruction_path is not None:
         save_reconstruction(droid, args.reconstruction_path)
 
-    traj_est = droid.terminate(image_stream(args.imagedir, args.calib, args.stride))
+    traj_est, timestamps = droid.terminate(image_stream(args.imagedir, args.calib, args.stride))
 
-    out_trajfn = args.reconstruction_path + '/traj.txt'
-    np.savetxt(out_trajfn, traj_est, fmt='%.6f', header='x y z qx qy qz qw')
-    print("Saved trajectory to {}".format(out_trajfn))
+    if args.out_traj_path is not None:
+        out_trajfn = args.out_traj_path + '/traj.txt'
+        np.savetxt(out_trajfn, traj_est, fmt='%.6f', header='x y z qx qy qz qw')
+        print("Saved trajectory to {}".format(out_trajfn))
+        
+        out_timesfn = args.out_traj_path + '/tstamps.txt'
+        np.savetxt(out_timesfn, timestamps, fmt='%.6f', header='ts')
+        print("Saved timestamps to {}".format(out_timesfn))
+
