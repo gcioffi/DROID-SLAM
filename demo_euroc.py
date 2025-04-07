@@ -85,6 +85,7 @@ if __name__ == '__main__':
     parser.add_argument("--image_size", default=[320,512])
     parser.add_argument("--disable_vis", action="store_true")
     parser.add_argument("--stereo", action="store_true")
+    parser.add_argument("--out_traj_path", help="path to saved estimated trajectory")
 
     parser.add_argument("--beta", type=float, default=0.3)
     parser.add_argument("--filter_thresh", type=float, default=2.4)
