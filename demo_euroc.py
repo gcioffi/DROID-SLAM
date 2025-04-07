@@ -129,6 +129,6 @@ if __name__ == '__main__':
         traj_out[:, 4:7] = traj_est[:, 4:]
         traj_out[:, 7] = traj_est[:, 3]
         
-        out_trajfn = args.out_traj_path + '/traj.txt'
-        np.savetxt(out_trajfn, traj_est, fmt='%.6f', header='x y z qw qx qy qz')
+        out_trajfn = args.out_traj_path + '/stamped_traj_estimate.txt'
+        np.savetxt(out_trajfn, traj_out, fmt='%.6f', header='ts x y z qx qy qz qw')
         print("Saved trajectory to {}".format(out_trajfn))
