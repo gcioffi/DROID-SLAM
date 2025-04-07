@@ -99,6 +99,9 @@ if __name__ == '__main__':
     parser.add_argument("--backend_thresh", type=float, default=24.0)
     parser.add_argument("--backend_radius", type=int, default=2)
     parser.add_argument("--backend_nms", type=int, default=2)
+
+    parser.add_argument("--upsample", action="store_true")
+    
     args = parser.parse_args()
 
     torch.multiprocessing.set_start_method('spawn')
