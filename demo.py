@@ -136,6 +136,6 @@ if __name__ == '__main__':
 
     if args.out_traj_path is not None:
         out_trajfn = args.out_traj_path + '/traj.txt'
-        np.savetxt(out_trajfn, traj_est, fmt='%.6f', header='x y z qx qy qz qw')
+        np.savetxt(out_trajfn, traj_est, fmt='%.6f', header='x y z qw qx qy qz')
         print("Saved trajectory to {}".format(out_trajfn))
 
