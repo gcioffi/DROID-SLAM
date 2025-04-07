@@ -101,7 +101,7 @@ if __name__ == '__main__':
     parser.add_argument("--backend_nms", type=int, default=2)
 
     parser.add_argument("--upsample", action="store_true")
-    
+
     args = parser.parse_args()
 
     torch.multiprocessing.set_start_method('spawn')
@@ -119,9 +119,9 @@ if __name__ == '__main__':
 
     if args.out_traj_path is not None:
         images_list = sorted(glob.glob(os.path.join(args.datapath, 'mav0/cam0/data/*.png')))
-        tstamps = [float(x.split('/')[-1][:-4]) for x in images_list]
+        tstamps = np.asarray([float(x.split('/')[-1][:-4]) for x in images_list])
 
-        assert traj_est.shape[0] == len(tstamps), "Trajectory length does not match number of images"
+        assert traj_est.shape[0] == tstamps.shape[0], "Trajectory length does not match number of images"
 
         traj_out = np.zeros((tstamps.shape[0], 8))
         traj_out[:, 0] = tstamps * 1e-9
