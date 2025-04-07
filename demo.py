@@ -132,14 +132,10 @@ if __name__ == '__main__':
     if args.reconstruction_path is not None:
         save_reconstruction(droid, args.reconstruction_path)
 
-    traj_est, timestamps = droid.terminate(image_stream(args.imagedir, args.calib, args.stride))
+    traj_est = droid.terminate(image_stream(args.imagedir, args.calib, 1))
 
     if args.out_traj_path is not None:
         out_trajfn = args.out_traj_path + '/traj.txt'
         np.savetxt(out_trajfn, traj_est, fmt='%.6f', header='x y z qx qy qz qw')
         print("Saved trajectory to {}".format(out_trajfn))
-        
-        out_timesfn = args.out_traj_path + '/tstamps.txt'
-        np.savetxt(out_timesfn, timestamps, fmt='%.6f', header='ts')
-        print("Saved timestamps to {}".format(out_timesfn))
 
