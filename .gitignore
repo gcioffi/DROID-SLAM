@@ -155,5 +155,5 @@ cache
 data
 figures/*.pdf
 
-model/droid.pth
+models/droid.pth
 reconstructions/*
