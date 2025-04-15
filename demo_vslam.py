@@ -43,7 +43,7 @@ def image_stream(datapath, calib_fn, image_size, fisheye, stereo=False, stride=1
     ht0, wd0 = [h, w]
 
     # read all png images in folder
-    images_left = sorted(glob.glob(datapath))[::stride]
+    images_left = sorted(glob.glob(os.path.join(datapath, '*.png')))[::stride]
 
     for t, imgL in enumerate(images_left):
         tstamp = float(imgL.split('/')[-1][:-4])        
