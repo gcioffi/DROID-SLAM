@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     torch.multiprocessing.set_start_method('spawn')
 
-    imagedir = os.path.join(args.datasetdir, args.scene)
+    imagedir = os.path.join(args.datapath, args.scene)
 
     # load some parameters that before where set manually as args
     calib_fn = os.path.join("calib", args.calib)
