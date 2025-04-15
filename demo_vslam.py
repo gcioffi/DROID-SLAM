@@ -17,51 +17,37 @@ from droid import Droid
 import torch.nn.functional as F
 
 
-
 def show_image(image):
     image = image.permute(1, 2, 0).cpu().numpy()
     cv2.imshow('image', image / 255.0)
     cv2.waitKey(1)
 
-def image_stream(datapath, image_size=[320, 512], stereo=False, stride=1):
+
+def image_stream(datapath, calib_fn, image_size, fisheye, stereo=False, stride=1):
     """ image generator """
+    calib = np.loadtxt(calib_fn, delimiter=" ")
+    fx, fy, cx, cy = calib[:4]
+    d1, d2, d3, d4 = calib[4:8]
+    w, h = calib[8:10].astype(int)
 
-    K_l = np.array([458.654, 0.0, 367.215, 0.0, 457.296, 248.375, 0.0, 0.0, 1.0]).reshape(3,3)
-    d_l = np.array([-0.28340811, 0.07395907, 0.00019359, 1.76187114e-05, 0.0])
-    R_l = np.array([
-         0.999966347530033, -0.001422739138722922, 0.008079580483432283, 
-         0.001365741834644127, 0.9999741760894847, 0.007055629199258132, 
-        -0.008089410156878961, -0.007044357138835809, 0.9999424675829176
-    ]).reshape(3,3)
+    K_l = np.array([fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]).reshape(3,3)
+    d_l = np.array([d1, d2, d3, d4, 0.0])
+    new_K = K_l.copy()
     
-    P_l = np.array([435.2046959714599, 0, 367.4517211914062, 0,  0, 435.2046959714599, 252.2008514404297, 0,  0, 0, 1, 0]).reshape(3,4)
-    map_l = cv2.initUndistortRectifyMap(K_l, d_l, R_l, P_l[:3,:3], (752, 480), cv2.CV_32F)
-    
-    K_r = np.array([457.587, 0.0, 379.999, 0.0, 456.134, 255.238, 0.0, 0.0, 1]).reshape(3,3)
-    d_r = np.array([-0.28368365, 0.07451284, -0.00010473, -3.555907e-05, 0.0]).reshape(5)
-    R_r = np.array([
-         0.9999633526194376, -0.003625811871560086, 0.007755443660172947, 
-         0.003680398547259526, 0.9999684752771629, -0.007035845251224894, 
-        -0.007729688520722713, 0.007064130529506649, 0.999945173484644
-    ]).reshape(3,3)
-    
-    P_r = np.array([435.2046959714599, 0, 367.4517211914062, -47.90639384423901, 0, 435.2046959714599, 252.2008514404297, 0, 0, 0, 1, 0]).reshape(3,4)
-    map_r = cv2.initUndistortRectifyMap(K_r, d_r, R_r, P_r[:3,:3], (752, 480), cv2.CV_32F)
+    if fisheye:
+        map_l = cv2.fisheye.initUndistortRectifyMap(K_l, d_l, np.eye(3), new_K, (w, h), cv2.CV_32F)
+    else:
+        map_l = cv2.initUndistortRectifyMap(K_l, d_l, np.eye(3), new_K, (w, h), cv2.CV_32F)
 
-    intrinsics_vec = [435.2046959714599, 435.2046959714599, 367.4517211914062, 252.2008514404297]
-    ht0, wd0 = [480, 752]
+    intrinsics_vec = [fx, fy, cx, cy]
+    ht0, wd0 = [h, w]
 
     # read all png images in folder
-    images_left = sorted(glob.glob(os.path.join(datapath, 'mav0/cam0/data/*.png')))[::stride]
-    images_right = [x.replace('cam0', 'cam1') for x in images_left]
+    images_left = sorted(glob.glob(datapath))[::stride]
 
-    for t, (imgL, imgR) in enumerate(zip(images_left, images_right)):
-        if stereo and not os.path.isfile(imgR):
-            continue
+    for t, imgL in enumerate(images_left):
         tstamp = float(imgL.split('/')[-1][:-4])        
         images = [cv2.remap(cv2.imread(imgL), map_l[0], map_l[1], interpolation=cv2.INTER_LINEAR)]
-        if stereo:
-            images += [cv2.remap(cv2.imread(imgR), map_r[0], map_r[1], interpolation=cv2.INTER_LINEAR)]
         
         images = torch.from_numpy(np.stack(images, 0))
         images = images.permute(0, 3, 1, 2).to("cuda:0", dtype=torch.float32)
@@ -78,9 +64,12 @@ def image_stream(datapath, image_size=[320, 512], stereo=False, stride=1):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--datapath", help="path to euroc sequence")
+    parser.add_argument("--datapath", help="path to dataset", required=True)
+    parser.add_argument('--scene', help="path to image folder", required=True)
+    parser.add_argument('--calib', required=True)
+    parser.add_argument('--fisheye', action="store_true")
     parser.add_argument("--gt", help="path to gt file")
-    parser.add_argument("--weights", default="droid.pth")
+    parser.add_argument("--weights", default="models/droid.pth")
     parser.add_argument("--buffer", type=int, default=512)
     parser.add_argument("--image_size", default=[320,512])
     parser.add_argument("--disable_vis", action="store_true")
@@ -106,19 +95,24 @@ if __name__ == '__main__':
 
     torch.multiprocessing.set_start_method('spawn')
 
-    print("Running evaluation on {}".format(args.datapath))
+    imagedir = os.path.join(args.datasetdir, args.scene)
+
+    # load some parameters that before where set manually as args
+    calib_fn = os.path.join("calib", args.calib)
+
+    print("Running evaluation on {}".format(imagedir))
     print(args)
 
     droid = Droid(args)
     time.sleep(5)
 
-    for (t, image, intrinsics) in tqdm(image_stream(args.datapath, stereo=args.stereo, stride=2)):
-        droid.track(t, image, intrinsics=intrinsics)
+    for (t, image, intrinsics) in tqdm(image_stream(imagedir, calib_fn, args.image_size, args.fisheye, stereo=False, stride=2)):
+        droid.track(t, image, intrinsics=intrinsics)    
 
-    traj_est = droid.terminate(image_stream(args.datapath, stride=1))
+    traj_est = droid.terminate(image_stream(imagedir, calib_fn, args.image_size, args.fisheye, stereo=False, stride=1))
 
     if args.out_traj_path is not None:
-        images_list = sorted(glob.glob(os.path.join(args.datapath, 'mav0/cam0/data/*.png')))
+        images_list = sorted(glob.glob(os.path.join(imagedir, '*.png')))
         tstamps = np.asarray([float(x.split('/')[-1][:-4]) for x in images_list])
 
         assert traj_est.shape[0] == tstamps.shape[0], "Trajectory length does not match number of images"
