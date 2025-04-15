@@ -31,12 +31,13 @@ def image_stream(datapath, calib_fn, image_size, fisheye, stereo=False, stride=1
     w, h = calib[8:10].astype(int)
 
     K_l = np.array([fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]).reshape(3,3)
-    d_l = np.array([d1, d2, d3, d4, 0.0])
     new_K = K_l.copy()
     
     if fisheye:
+        d_l = np.array([[d1], [d2], [d3], [d4]])
         map_l = cv2.fisheye.initUndistortRectifyMap(K_l, d_l, np.eye(3), new_K, (w, h), cv2.CV_32F)
     else:
+        d_l = np.array([d1, d2, d3, d4, 0.0])
         map_l = cv2.initUndistortRectifyMap(K_l, d_l, np.eye(3), new_K, (w, h), cv2.CV_32F)
 
     intrinsics_vec = [fx, fy, cx, cy]
@@ -106,7 +107,11 @@ if __name__ == '__main__':
     droid = Droid(args)
     time.sleep(5)
 
+    n = 0
     for (t, image, intrinsics) in tqdm(image_stream(imagedir, calib_fn, args.image_size, args.fisheye, stereo=False, stride=2)):
+        if n % 100 == 0:
+            print(f"Processed {n} images")
+        n += 1
         droid.track(t, image, intrinsics=intrinsics)    
 
     traj_est = droid.terminate(image_stream(imagedir, calib_fn, args.image_size, args.fisheye, stereo=False, stride=1))
