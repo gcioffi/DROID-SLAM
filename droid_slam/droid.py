@@ -71,6 +71,14 @@ class Droid:
             # global bundle adjustment
             # self.backend()
 
+    def return_trajectory(self, stream=None):
+        """ return the estimated trajectory """
+
+        # get the camera trajectory
+        print("Tracking is finished, filling in the trajectory")
+        camera_trajectory = self.traj_filler(stream)
+        return camera_trajectory.inv().data.cpu().numpy()
+    
     def terminate(self, stream=None):
         """ terminate the visualization process, return poses [t, q] """
 

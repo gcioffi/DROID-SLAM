@@ -114,13 +114,23 @@ if __name__ == '__main__':
         n += 1
         droid.track(t, image, intrinsics=intrinsics)    
 
+    odom_traj_est = droid.return_trajectory(image_stream(imagedir, calib_fn, args.image_size, args.fisheye, stereo=False, stride=1))
+    
+    # This will call the global bundle adjustment
     traj_est = droid.terminate(image_stream(imagedir, calib_fn, args.image_size, args.fisheye, stereo=False, stride=1))
 
     if args.out_traj_path is not None:
         images_list = sorted(glob.glob(os.path.join(imagedir, '*.png')))
         tstamps = np.asarray([float(x.split('/')[-1][:-4]) for x in images_list])
 
+        assert odom_traj_est.shape[0] == tstamps.shape[0], "Odometry Trajectory length does not match number of images"
         assert traj_est.shape[0] == tstamps.shape[0], "Trajectory length does not match number of images"
+
+        odom_traj_out = np.zeros((tstamps.shape[0], 8))
+        odom_traj_out[:, 0] = tstamps * 1e-9
+        odom_traj_out[:, 1:4] = odom_traj_est[:, 0:3]
+        odom_traj_out[:, 4:7] = odom_traj_est[:, 4:]
+        odom_traj_out[:, 7] = odom_traj_est[:, 3]
 
         traj_out = np.zeros((tstamps.shape[0], 8))
         traj_out[:, 0] = tstamps * 1e-9
@@ -128,6 +138,10 @@ if __name__ == '__main__':
         traj_out[:, 4:7] = traj_est[:, 4:]
         traj_out[:, 7] = traj_est[:, 3]
         
+        out_odomtrajfn = args.out_traj_path + '/stamped_odomtraj_estimate.txt'
+        np.savetxt(out_odomtrajfn, odom_traj_out, fmt='%.6f', header='ts x y z qx qy qz qw')
+        print("Saved odometry trajectory to {}".format(out_odomtrajfn))
+
         out_trajfn = args.out_traj_path + '/stamped_traj_estimate.txt'
         np.savetxt(out_trajfn, traj_out, fmt='%.6f', header='ts x y z qx qy qz qw')
         print("Saved trajectory to {}".format(out_trajfn))
