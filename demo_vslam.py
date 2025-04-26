@@ -128,15 +128,11 @@ if __name__ == '__main__':
 
         odom_traj_out = np.zeros((tstamps.shape[0], 8))
         odom_traj_out[:, 0] = tstamps * 1e-9
-        odom_traj_out[:, 1:4] = odom_traj_est[:, 0:3]
-        odom_traj_out[:, 4:7] = odom_traj_est[:, 4:]
-        odom_traj_out[:, 7] = odom_traj_est[:, 3]
+        odom_traj_out[:, 1:] = odom_traj_est
 
         traj_out = np.zeros((tstamps.shape[0], 8))
         traj_out[:, 0] = tstamps * 1e-9
-        traj_out[:, 1:4] = traj_est[:, 0:3]
-        traj_out[:, 4:7] = traj_est[:, 4:]
-        traj_out[:, 7] = traj_est[:, 3]
+        traj_out[:, 1:] = traj_est
         
         out_odomtrajfn = args.out_traj_path + '/stamped_odomtraj_estimate.txt'
         np.savetxt(out_odomtrajfn, odom_traj_out, fmt='%.6f', header='ts x y z qx qy qz qw')
