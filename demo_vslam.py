@@ -108,7 +108,7 @@ if __name__ == '__main__':
     time.sleep(5)
 
     n = 0
-    for (t, image, intrinsics) in tqdm(image_stream(imagedir, calib_fn, args.image_size, args.fisheye, stereo=False, stride=2)):
+    for (t, image, intrinsics) in tqdm(image_stream(imagedir, calib_fn, args.image_size, args.fisheye, stereo=False, stride=1)):
         if n % 100 == 0:
             print(f"Processed {n} images")
         n += 1
