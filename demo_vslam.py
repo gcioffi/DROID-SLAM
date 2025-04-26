@@ -75,7 +75,7 @@ if __name__ == '__main__':
     parser.add_argument("--image_size", default=[320,512])
     parser.add_argument("--disable_vis", action="store_true")
     parser.add_argument("--stereo", action="store_true")
-    parser.add_argument("--out_traj_path", help="path to saved estimated trajectory")
+    parser.add_argument("--out_traj_prefix", help="path to saved estimated trajectory")
 
     parser.add_argument("--beta", type=float, default=0.3)
     parser.add_argument("--filter_thresh", type=float, default=2.4)
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     # This will call the global bundle adjustment
     traj_est = droid.terminate(image_stream(imagedir, calib_fn, args.image_size, args.fisheye, stereo=False, stride=1))
 
-    if args.out_traj_path is not None:
+    if args.out_traj_prefix is not None:
         images_list = sorted(glob.glob(os.path.join(imagedir, '*.png')))
         tstamps = np.asarray([float(x.split('/')[-1][:-4]) for x in images_list])
 
@@ -134,10 +134,10 @@ if __name__ == '__main__':
         traj_out[:, 0] = tstamps * 1e-9
         traj_out[:, 1:] = traj_est
         
-        out_odomtrajfn = args.out_traj_path + '/stamped_odomtraj_estimate.txt'
+        out_odomtrajfn = args.out_traj_prefix + '_stamped_odomtraj_estimate.txt'
         np.savetxt(out_odomtrajfn, odom_traj_out, fmt='%.6f', header='ts x y z qx qy qz qw')
         print("Saved odometry trajectory to {}".format(out_odomtrajfn))
 
-        out_trajfn = args.out_traj_path + '/stamped_traj_estimate.txt'
+        out_trajfn = args.out_traj_prefix + '_stamped_traj_estimate.txt'
         np.savetxt(out_trajfn, traj_out, fmt='%.6f', header='ts x y z qx qy qz qw')
         print("Saved trajectory to {}".format(out_trajfn))
