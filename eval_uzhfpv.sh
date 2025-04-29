@@ -13,3 +13,6 @@ python demo_vslam.py --datapath=/datasets/UZH_FPV/ --scene=outdoor_forward_10_sn
 
 # Outdoor 45
 python demo_vslam.py --datapath=/datasets/UZH_FPV/ --scene=outdoor_45_1_snapdragon_with_gt/img/left --calib=uzhfpv_outdoor_45.txt --fisheye --buffer=2000 --out_traj_prefix=/home/giovanni/DROIDSLAM_docker/DROID_SLAM/outdoor_45_1
+
+# Race 1
+python demo_vslam.py --datapath=/datasets/UZH_FPV/ --scene=race_1/img/no_init_static_part --calib=uzhfpv_race.txt --fisheye --buffer=2000 --out_traj_prefix=/home/giovanni/DROIDSLAM_docker/DROID_SLAM/race_1
